@@ -69,8 +69,8 @@ def update_bullets():
             bullets.remove(bullet)
             continue
         # end = click + dir * 40
-        bullet[1] += 4 * dir.x
-        bullet[2] += 4 * dir.y
+        bullet[1] += 7 * dir.x
+        bullet[2] += 7 * dir.y
         if bullet[1] > width2 or bullet[1] < -width2 or bullet[2] > height2 or bullet[2] < -height2:
             bullets.remove(bullet)
             continue
