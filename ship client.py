@@ -20,13 +20,14 @@ mouse_down = False
 click = Vector2(0, 0)
 drag = Vector2(0, 0)
 acc = Vector2(0, 0)
-accmax = 20
+accmax = 10
 vel = Vector2(0, 0)
 velmax = accmax * 1.5
 pos = Vector2(0, 0)
-
+dir = Vector2(0, 0)
 
 players = []  # (locations only (x,y))
+bullets = []
 
 uid = 0  # assigned by server
 
@@ -39,7 +40,7 @@ def search_server():
     global uid
     # receive first packet to identify server
     data, server_address = server_socket.recvfrom(1024)
-    server_socket.sendto('new'.encode(), (server_address[0], 12345))
+    server_socket.sendto(('new').encode(), (server_address[0], 12345))
     # server_socket.bind((server_address[0], 12344))
     player_list = eval(data.decode())
     if len(player_list) == 0:
@@ -81,8 +82,15 @@ def update():
     w.blit(text, (0, 0))
 
 
-def draw_ships():
-    global players, screen2
+def add_bullet():
+    global pos, acc, server_address, dir
+    msg = ("bullet", uid, pos.x, pos.y, dir.x, dir.y)
+    json_to_dump = json.dumps(msg)
+    server_socket.sendto(json_to_dump.encode(), (server_address[0], 12345))
+
+
+def draw():
+    global players, screen2, bullets
     # acc_angle = p.math.Vector2(1, 0).angle_to(acc)
     # p.draw.circle(trails, 'white', (pos.x + height2/2, pos.y + width2/2), 5)
     for player in players:
@@ -91,6 +99,9 @@ def draw_ships():
                       (player[1] + height2/2, player[2] + width2/2), 5)
     p.draw.circle(screen2, color_list[uid],
                   (pos.x + height2/2, pos.y + width2/2), 5)
+    for bullet in bullets:
+        p.draw.circle(screen2, color_list[bullet[0] % len(color_list)],
+                      (bullet[1] + height2/2, bullet[2] + width2/2), 5, 1)
 
 
 def listen_to_server():
@@ -98,17 +109,19 @@ def listen_to_server():
     collect a list/ dict containing all player ids and locations.
     yet to implement dict and collection of locations of bullets
     '''
-    global players
+    global players, bullets
     while True:
         data, server_address = server_socket.recvfrom(1024)
-        players = eval(data.decode())
+        received = eval(data.decode())
+        bullets = received.pop()
+        players = received
         # print(f'received from server:{players}')
 
 
 threading.Thread(target=listen_to_server, daemon=True).start()
 
 
-def send_data():
+def send_location():
     '''
     send player's current location with id
     yet to implement bullets
@@ -127,7 +140,7 @@ while True:
     for event in p.event.get():
         if event.type == p.QUIT:
             # print("bye")
-            server_socket.sendto(('bye ' + str(uid)).encode(),
+            server_socket.sendto((('bye ' + str(uid))).encode(),
                                  (server_address[0], 12345))
             p.quit()
             exit()
@@ -137,11 +150,14 @@ while True:
         if event.type == p.MOUSEBUTTONUP:
             mouse_down = False
             drag = click
+        if event.type == p.KEYDOWN:
+            # print('fuck')
+            add_bullet()
 
     screen.fill((10, 10, 10, 255))
     w.blit(screen, (-pos.x - width2/2 + width/2, -pos.y - height2/2 + height/2))
     screen2.fill((10, 10, 10, 0))
-    draw_ships()
+    draw()
     w.blit(screen2, (-pos.x - width2/2 + width/2, -pos.y - height2/2 + height/2))
 
     if mouse_down:
@@ -155,5 +171,5 @@ while True:
         end = click + dir * 40
         p.draw.line(w, 'white', click, end)
     update()
-    send_data()
+    send_location()
     p.display.flip()
