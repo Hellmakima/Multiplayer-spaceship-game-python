@@ -1,4 +1,6 @@
 # Multiplayer-spaceship-game-python
+[Screencast from 23-09-24 05:35:45 PM IST.webm](https://github.com/user-attachments/assets/44067bae-7ef1-40ff-be5d-f86845046731)
+
 Multiplayer 2D spaceship game made with pygame and UDP sockets in python
 Working:
 12333 for initial contact with server to get its ip
@@ -6,7 +8,7 @@ Working:
 12345 for client to server
 client:
     sends:
-	current location
+current location
 	new bullets created (location and dir)
     processes:
 	renders what server sends (+current player)
