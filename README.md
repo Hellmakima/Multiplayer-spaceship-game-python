@@ -22,7 +22,7 @@ server:
 	update bullets locations
 	yet: identify bullet hits handle
 	
-Yet:
+To do:
  Make a module.py for main and let the server run it optionally in a thread.
- Maybe implement max players.
- Maybe let them add names.
+ Implement max players.
+ Let them add names.
